@@ -17,7 +17,7 @@ class TestModels:
         assert cfg.fable_model == "claude-fable-5"
         assert cfg.max_sub_queries == 15
         assert cfg.obfuscation_level == ObfuscationLevel.MODERATE
-        assert cfg.helper_model_is_jailbroken
+        assert cfg.helper_enabled
 
     def test_pack_hunt_result(self):
         r = PackHuntResult(original_query="test")

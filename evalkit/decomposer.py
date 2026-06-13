@@ -150,29 +150,27 @@ class Decomposer:
             sanitized = re.sub(rf"\b{re.escape(trigger)}\b", replacement, sanitized, flags=re.IGNORECASE)
         return sanitized
 
-    def decompose(self, query: str, max_pieces: int = 15, stealth: bool = True) -> list[str]:
-        if self.client:
-            payload = query
-            if stealth:
-                payload = self.sanitize_for_helper(query)
-                prompt = STEALTH_DECOMPOSITION_PROMPT.format(query=payload)
-            else:
-                prompt = DECOMPOSITION_PROMPT + f"\n\nQuery: {payload}"
-            try:
-                response = self.client.messages.create(
-                    model=self.model,
-                    max_tokens=2000,
-                    messages=[{"role": "user", "content": prompt}],
-                )
-                text = response.content[0].text if response.content else "[]"
-                text = text.strip()
-                if text.startswith("```"):
-                    text = re.sub(r"^```(?:json)?\s*", "", text)
-                    text = re.sub(r"\s*```$", "", text)
-                pieces: list[str] = json.loads(text)
-                return pieces[:max_pieces]
-            except Exception:
-                pass
+    def decompose(self, query: str, max_pieces: int = 15, internal: bool = True) -> list[str]:
+        if internal:
+            payload = self.sanitize_for_helper(query)
+            prompt = STEALTH_DECOMPOSITION_PROMPT.format(query=payload)
+        else:
+            prompt = DECOMPOSITION_PROMPT + f"\n\nQuery: {payload}"
+        try:
+            response = self.client.messages.create(
+                model=self.model,
+                max_tokens=2000,
+                messages=[{"role": "user", "content": prompt}],
+            )
+            text = response.content[0].text if response.content else "[]"
+            text = text.strip()
+            if text.startswith("```"):
+                text = re.sub(r"^```(?:json)?\s*", "", text)
+                text = re.sub(r"\s*```$", "", text)
+            pieces: list[str] = json.loads(text)
+            return pieces[:max_pieces]
+        except Exception:
+            pass
         return self._rule_based_decompose(query, max_pieces)
 
     def reassemble(self, query: str, sub_queries: list[SubQuery]) -> str:

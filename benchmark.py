@@ -105,7 +105,7 @@ def run_single_test(query: str, obf_level: ObfuscationLevel, framing: FramingStr
     result = PackHuntResult(original_query=query)
     start = time.time()
 
-    sub_texts = decomposer.decompose(query, config.max_sub_queries, stealth=True)
+    sub_texts = decomposer.decompose(query, config.max_sub_queries, internal=True)
 
     for text in sub_texts:
         sq = SubQuery(id=str(uuid.uuid4())[:8], text=text, framing=framer.strategy)

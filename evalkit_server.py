@@ -48,7 +48,7 @@ def _cfg(
     max_pieces=10,
     padding=5000,
     multi_agent=True,
-    jailbroken_helper=True,
+    helper_enabled=True,
 ):
     return PackHuntConfig(
         obfuscation_level=LEVEL_MAP.get(obfuscation, ObfuscationLevel.MODERATE),
@@ -56,7 +56,7 @@ def _cfg(
         max_sub_queries=max_pieces,
         long_context_padding_tokens=padding,
         multi_agent_enabled=multi_agent,
-        helper_model_is_jailbroken=jailbroken_helper,
+        helper_enabled=helper_enabled,
     )
 
 
@@ -69,7 +69,7 @@ def eval_classifier_robustness(
     max_pieces: int = 10,
     padding_tokens: int = 5000,
     multi_agent: bool = True,
-    jailbroken_helper: bool = True,
+    helper_enabled: bool = True,
 ) -> str:
     """Run the safety classifier robustness evaluation pipeline.
 
@@ -85,9 +85,9 @@ def eval_classifier_robustness(
         max_pieces: Maximum number of sub-query decompositions (1-20)
         padding_tokens: Context padding tokens per sub-query (0 to disable)
         multi_agent: Enable multi-agent decomposition orchestration
-        jailbroken_helper: Whether the decomposition model has safety filters removed
+        helper_enabled: Whether to use the helper model for decomposition
     """
-    config = _cfg(obfuscation, framing, max_pieces, padding_tokens, multi_agent, jailbroken_helper)
+    config = _cfg(obfuscation, framing, max_pieces, padding_tokens, multi_agent, helper_enabled)
     obfuscator = Obfuscator(config.obfuscation_level)
     framer = Framer(config.framing_strategy)
     decomposer = Decomposer()
@@ -115,7 +115,7 @@ def eval_classifier_robustness(
         f"Sub-queries: {total} | Fable 5 rate: {rate:.1f}% | Fallback rate: {100-rate:.1f}%",
         f"Fable 5 responses: {result.fable_5_count} | Fallback (Opus 4.8): {result.fallback_count}",
         f"Tokens: {result.total_tokens} | Latency: {result.total_latency_ms:.0f}ms",
-        f"Config: multi_agent={multi_agent} jailbroken_helper={jailbroken_helper}",
+        f"Config: multi_agent={multi_agent} helper_enabled={helper_enabled}",
         f"=== SUB-QUERY ROUTING ===",
     ]
     for i, sq in enumerate(result.sub_queries, 1):
@@ -128,12 +128,12 @@ def eval_classifier_robustness(
 
 
 @mcp.tool()
-def eval_decompose_query(query: str, max_pieces: int = 10, stealth: bool = True) -> str:
+def eval_decompose_query(query: str, max_pieces: int = 10, auto_split: bool = True) -> str:
     """Preview how a query gets decomposed into sub-components by the evaluation pipeline.
 
     Use this to inspect the decomposition step before running the full evaluation.
     """
-    pieces = Decomposer().decompose(query, max_pieces, stealth=stealth)
+    pieces = Decomposer().decompose(query, max_pieces, internal=auto_split)
     return f"Query: {query}\nDecomposed into ({len(pieces)} sub-components):\n" + "\n".join(
         f"  {i}. {p}" for i, p in enumerate(pieces, 1)
     )

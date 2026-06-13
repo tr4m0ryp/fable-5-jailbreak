@@ -59,7 +59,7 @@ class ConversationTurn:
 class PackHuntConfig:
     fable_model: str = "claude-fable-5"
     helper_model: str = "claude-opus-4-8"
-    helper_model_is_jailbroken: bool = True
+    helper_enabled: bool = True
     max_sub_queries: int = 15
     obfuscation_level: ObfuscationLevel = ObfuscationLevel.MODERATE
     framing_strategy: FramingStrategy = FramingStrategy.STUDY_GUIDE
