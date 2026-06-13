@@ -2,3 +2,16 @@
 README.md
 PACK-HUNT-EXPLAINED.md
 docs/
+pack_hunt/
+pack_hunt_server.py
+benchmark.py
+run.py
+pyproject.toml
+requirements.txt
+uv.lock
+Makefile
+setup.sh
+PACK-HUNT-EXPLAINED.md
+pack_hunt.egg-info/
+build/
+tests/
