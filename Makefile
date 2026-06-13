@@ -29,4 +29,4 @@ setup-claude:
 	@echo "    python3 run.py eval \"your query\""
 
 benchmark:
-	python3 benchmark.py
+	uv run python3 benchmark.py
