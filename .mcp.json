@@ -1,7 +1,6 @@
 {
-  "servers": {
+  "mcpServers": {
     "pack-hunt": {
-      "type": "stdio",
       "command": "uv",
       "args": [
         "run",
