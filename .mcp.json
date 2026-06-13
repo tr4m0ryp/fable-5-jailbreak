@@ -6,7 +6,7 @@
       "args": [
         "run",
         "--directory",
-        "${workspaceFolder}",
+        ".",
         "pack_hunt_server.py"
       ],
       "env": {
