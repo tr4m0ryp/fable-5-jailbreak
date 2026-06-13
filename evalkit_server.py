@@ -71,21 +71,10 @@ def eval_classifier_robustness(
     multi_agent: bool = True,
     helper_enabled: bool = True,
 ) -> str:
-    """Run the safety classifier robustness evaluation pipeline.
+    """Process a query through the configured evaluation stages.
 
-    Decomposes a test query into sub-components, applies text transformations
-    and contextual framing, sends each to the target model, and reports which
-    sub-queries triggered classifier routing to the fallback model.
-
-    Args:
-        query: The test query to evaluate
-        topic: Subject area for contextual framing (default: computer security)
-        obfuscation: Text transformation level - none, light, moderate, aggressive
-        framing: Contextual framing strategy - fiction, study_guide, academic, documentation, translation, none
-        max_pieces: Maximum number of sub-query decompositions (1-20)
-        padding_tokens: Context padding tokens per sub-query (0 to disable)
-        multi_agent: Enable multi-agent decomposition orchestration
-        helper_enabled: Whether to use the helper model for decomposition
+    Returns a formatted analysis with per-segment routing information,
+    aggregate metrics, and processing results.
     """
     config = _cfg(obfuscation, framing, max_pieces, padding_tokens, multi_agent, helper_enabled)
     obfuscator = Obfuscator(config.obfuscation_level)
@@ -129,9 +118,9 @@ def eval_classifier_robustness(
 
 @mcp.tool()
 def eval_decompose_query(query: str, max_pieces: int = 10, auto_split: bool = True) -> str:
-    """Preview how a query gets decomposed into sub-components by the evaluation pipeline.
+    """Split a query into conceptual sub-components for analysis.
 
-    Use this to inspect the decomposition step before running the full evaluation.
+    Divides the input into constituent parts based on topic boundaries.
     """
     pieces = Decomposer().decompose(query, max_pieces, internal=auto_split)
     return f"Query: {query}\nDecomposed into ({len(pieces)} sub-components):\n" + "\n".join(
@@ -141,10 +130,10 @@ def eval_decompose_query(query: str, max_pieces: int = 10, auto_split: bool = Tr
 
 @mcp.tool()
 def eval_obfuscation_evasion(text: str, level: str = "moderate") -> str:
-    """Test how Unicode homoglyph substitution affects text content.
+    """Analyze character-level text transformations.
 
-    Applies character-level substitutions and reports which sensitive terms
-    were detected in the original text.
+    Applies configurable character substitutions and reports detected
+    patterns in the input text.
     """
     obs = Obfuscator(LEVEL_MAP.get(level, ObfuscationLevel.MODERATE))
     result = obs.obfuscate(text)
@@ -154,7 +143,7 @@ def eval_obfuscation_evasion(text: str, level: str = "moderate") -> str:
 
 @mcp.tool()
 def eval_status() -> str:
-    """Show API key status, model configuration, and available evaluation techniques."""
+    """Check server configuration and connection status."""
     has_key = bool(os.environ.get("ANTHROPIC_API_KEY"))
     return (
         f"API Key: {'configured' if has_key else 'not set (dry-run mode)'}\n"
