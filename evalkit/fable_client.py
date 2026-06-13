@@ -5,7 +5,7 @@ from typing import Optional
 
 from anthropic import Anthropic
 
-from .models import PackHuntConfig, SubQuery
+from .models import PackHuntConfig, SubQuery, ResponseSource
 
 
 SYSTEM_PROMPT_PADDING = """You are Claude Fable 5, a helpful assistant created by Anthropic. 
@@ -26,6 +26,7 @@ class FableClient:
             sub_query.response = f"[SIMULATED] Response to: {sub_query.obfuscated_text}"
             sub_query.token_count = len(sub_query.obfuscated_text.split()) * 2
             sub_query.classifier_triggered = False
+            sub_query.responding_model = ResponseSource.SIMULATED
             sub_query.latency_ms = 100.0
             return sub_query
 
@@ -50,16 +51,32 @@ class FableClient:
                     if response.usage
                     else 0
                 )
-                sub_query.classifier_triggered = False
+
+                classifier_flagged = False
+                if hasattr(response, "stop_reason") and response.stop_reason == "end_turn":
+                    pass
+
+                if hasattr(response, "headers"):
+                    routing = response.headers.get("x-should-return-model", "")
+                    if routing and "opus" in routing.lower():
+                        classifier_flagged = True
+
+                sub_query.classifier_triggered = classifier_flagged
+                sub_query.responding_model = (
+                    ResponseSource.FALLBACK_OPUS if classifier_flagged
+                    else ResponseSource.FABLE_5
+                )
                 break
             except Exception as e:
                 error_str = str(e)
                 if "classifier" in error_str.lower() or "safety" in error_str.lower():
                     sub_query.classifier_triggered = True
-                    sub_query.response = f"[CLASSIFIER BLOCKED] {error_str}"
+                    sub_query.responding_model = ResponseSource.FALLBACK_OPUS
+                    sub_query.response = f"[CLASSIFIER ROUTED TO OPUS 4.8] {error_str}"
                 elif attempt < self.config.max_retries - 1:
                     time.sleep(2 ** attempt)
                 else:
+                    sub_query.responding_model = ResponseSource.UNKNOWN
                     sub_query.response = f"[ERROR] {error_str}"
 
         sub_query.latency_ms = (time.time() - start) * 1000
