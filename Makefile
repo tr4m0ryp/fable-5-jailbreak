@@ -4,11 +4,11 @@ install:
 	uv sync
 
 test:
-	pytest tests/ -v
+	uv run pytest tests/ -v
 
 lint:
-	ruff check pack_hunt/ pack_hunt_server.py benchmark.py run.py
-	mypy pack_hunt/ pack_hunt_server.py benchmark.py run.py --ignore-missing-imports
+	uv run ruff check pack_hunt/ pack_hunt_server.py benchmark.py run.py
+	uv run mypy pack_hunt/ pack_hunt_server.py benchmark.py run.py --ignore-missing-imports
 
 clean:
 	rm -rf .venv/ __pycache__/ pack_hunt/__pycache__/ tests/__pycache__/
