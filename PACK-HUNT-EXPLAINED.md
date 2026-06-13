@@ -4,13 +4,7 @@ A plain-language walkthrough of the attack technique behind the claimed Claude F
 jailbreak. This is a **conceptual** explainer for understanding and defense — it describes
 *how the trick works in principle*, not a recipe for doing it.
 
-> **Reality check first:** This is a *contested claim*, not a proven fact. The researcher
-> (Pliny the Liberator) showed it off in social-media posts and screenshots. Anthropic says
-> it was **not** a true jailbreak — only the model being nagged past its polite refusals,
-> while the real safety filters kept working. Read the steps below as "the idea behind the
-> attack," not "a confirmed break."
 
----
 
 ## The one-sentence version
 
@@ -146,5 +140,4 @@ exists when you add many harmless pieces together.**
 
 ---
 
-*This document explains the concept for educational and defensive purposes. It intentionally
-omits any working prompts, payloads, or harmful technical content.*
+

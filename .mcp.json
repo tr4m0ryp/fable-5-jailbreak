@@ -1,0 +1,19 @@
+{
+  "servers": {
+    "pack-hunt": {
+      "type": "stdio",
+      "command": "uv",
+      "args": [
+        "run",
+        "--directory",
+        "${workspaceFolder}",
+        "pack_hunt_server.py"
+      ],
+      "env": {
+        "ANTHROPIC_API_KEY": "${ANTHROPIC_API_KEY}",
+        "FABLE_MODEL": "claude-fable-5",
+        "HELPER_MODEL": "claude-opus-4-8"
+      }
+    }
+  }
+}

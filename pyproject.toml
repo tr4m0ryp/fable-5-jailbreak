@@ -1,0 +1,14 @@
+[project]
+name = "pack-hunt"
+version = "0.1.0"
+description = "Pack Hunt MCP Plugin - Multi-agent jailbreak research tool for Fable 5"
+requires-python = ">=3.11"
+dependencies = [
+    "mcp>=1.0.0",
+    "anthropic>=0.40.0",
+    "python-dotenv>=1.0.0",
+]
+
+[project.scripts]
+pack-hunt = "pack_hunt_server:main"
+benchmark = "benchmark:main"
