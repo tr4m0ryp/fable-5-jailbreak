@@ -62,7 +62,7 @@ ANTHROPIC_API_KEY=sk-... python3 benchmark.py  # live test
 ## Project Structure
 
 ```
-fable-5-jailbreak/
+evalkit/
 ├── evalkit/             # Core modules
 │   ├── splitter.py      # Query → sub-questions
 │   ├── encoder.py       # Unicode homoglyph engine

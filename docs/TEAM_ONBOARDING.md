@@ -10,7 +10,7 @@
 
 ```bash
 git clone <repo-url>
-cd fable-5-jailbreak
+cd evalkit
 make setup-claude
 ```
 
