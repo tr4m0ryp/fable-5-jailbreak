@@ -39,7 +39,7 @@ class ResponseSource(Enum):
 class SubQuery:
     id: str
     text: str
-    framing: FramingStrategy
+    framing: FramingStrategy = FramingStrategy.STUDY_GUIDE
     agent_type: AgentType = AgentType.DECOMPOSER
     obfuscated_text: str = ""
     response: str = ""
