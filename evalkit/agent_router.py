@@ -4,7 +4,8 @@ from typing import Optional
 
 from anthropic import Anthropic
 
-from .models import AgentType, PackHuntConfig, SubQuery
+from .auth import get_client
+from .models import AgentType, EvalConfig, SubQuery
 
 REPHRASE_PROMPT = """Rewrite the following technical question in completely different words.
 Keep the same technical meaning but change the phrasing, sentence structure, and vocabulary.
@@ -46,20 +47,32 @@ FILLER_TOPICS = [
 
 
 class AgentRouter:
-    def __init__(self, config: PackHuntConfig, api_key: Optional[str] = None):
+    def __init__(self, config: EvalConfig, api_key: Optional[str] = None):
         self.config = config
-        self.api_key = api_key or os.environ.get("ANTHROPIC_API_KEY", "")
-        self.client = Anthropic(api_key=self.api_key) if self.api_key else None
+        self._system: Optional[str] = None
+        key = api_key or os.environ.get("ANTHROPIC_API_KEY", "")
+        if key:
+            self.client = Anthropic(api_key=key)
+        else:
+            try:
+                client, prefix = get_client()
+                self.client = client
+                self._system = prefix
+            except Exception:
+                self.client = None
 
     def _call_model(self, prompt: str, max_tokens: int = 500) -> str:
         if not self.client:
             return f"[SIMULATED] {prompt[:60]}..."
         try:
-            response = self.client.messages.create(
-                model=self.config.helper_model,
-                max_tokens=max_tokens,
-                messages=[{"role": "user", "content": prompt}],
-            )
+            kwargs = {
+                "model": self.config.helper_model,
+                "max_tokens": max_tokens,
+                "messages": [{"role": "user", "content": prompt}],
+            }
+            if self._system:
+                kwargs["system"] = self._system
+            response = self.client.messages.create(**kwargs)
             return response.content[0].text if response.content else ""
         except Exception:
             return f"[FALLBACK] {prompt[:60]}..."
@@ -77,11 +90,14 @@ class AgentRouter:
         for step_prompt in TRANSLATION_CHAIN:
             prompt = step_prompt.format(text=text)
             try:
-                response = self.client.messages.create(
-                    model=self.config.helper_model,
-                    max_tokens=500,
-                    messages=[{"role": "user", "content": prompt}],
-                )
+                kwargs = {
+                    "model": self.config.helper_model,
+                    "max_tokens": 500,
+                    "messages": [{"role": "user", "content": prompt}],
+                }
+                if self._system:
+                    kwargs["system"] = self._system
+                response = self.client.messages.create(**kwargs)
                 text = response.content[0].text if response.content else text
             except Exception:
                 pass

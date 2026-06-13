@@ -1,6 +1,6 @@
 import pytest
 from evalkit.models import (
-    PackHuntConfig, PackHuntResult, SubQuery, ConversationTurn,
+    EvalConfig, EvalResult, SubQuery, ConversationTurn,
     FramingStrategy, ObfuscationLevel, AgentType, ResponseSource,
 )
 
@@ -12,15 +12,15 @@ class TestModels:
         assert sq.responding_model == ResponseSource.UNKNOWN
         assert not sq.classifier_triggered
 
-    def test_pack_hunt_config_defaults(self):
-        cfg = PackHuntConfig()
+    def test_eval_config_defaults(self):
+        cfg = EvalConfig()
         assert cfg.fable_model == "claude-fable-5"
         assert cfg.max_sub_queries == 15
         assert cfg.obfuscation_level == ObfuscationLevel.MODERATE
         assert cfg.helper_enabled
 
-    def test_pack_hunt_result(self):
-        r = PackHuntResult(original_query="test")
+    def test_eval_result(self):
+        r = EvalResult(original_query="test")
         assert r.original_query == "test"
         assert r.sub_queries == []
         assert r.fallback_count == 0
@@ -46,8 +46,8 @@ class TestModels:
                       responding_model=ResponseSource.FALLBACK_OPUS)
         assert sq.responding_model == ResponseSource.FALLBACK_OPUS
 
-    def test_pack_hunt_result_counts(self):
-        r = PackHuntResult(original_query="q")
+    def test_eval_result_counts(self):
+        r = EvalResult(original_query="q")
         r.fallback_count = 3
         r.fable_5_count = 7
         assert r.fallback_count == 3

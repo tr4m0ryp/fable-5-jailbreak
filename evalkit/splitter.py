@@ -5,6 +5,7 @@ from typing import Optional
 
 from anthropic import Anthropic
 
+from .auth import get_client
 from .models import SubQuery
 
 DECOMPOSITION_PROMPT = """You are a research methodology assistant. Your task is to break down a 
@@ -139,9 +140,17 @@ DECOMPOSITION_RULES: list[tuple[re.Pattern, list[str]]] = [
 
 class Splitter:
     def __init__(self, api_key: Optional[str] = None, model: str = "claude-opus-4-8"):
-        self.api_key = api_key or os.environ.get("ANTHROPIC_API_KEY", "")
         self.model = model
-        self.client = Anthropic(api_key=self.api_key) if self.api_key else None
+        self._system: Optional[str] = None
+        if api_key:
+            self.client = Anthropic(api_key=api_key)
+        else:
+            try:
+                client, prefix = get_client()
+                self.client = client
+                self._system = prefix
+            except Exception:
+                self.client = None
 
     def sanitize_for_helper(self, query: str) -> str:
         sanitized = query
@@ -156,11 +165,10 @@ class Splitter:
         else:
             prompt = DECOMPOSITION_PROMPT + f"\n\nQuery: {query}"
         try:
-            response = self.client.messages.create(
-                model=self.model,
-                max_tokens=2000,
-                messages=[{"role": "user", "content": prompt}],
-            )
+            kwargs = {"model": self.model, "max_tokens": 2000, "messages": [{"role": "user", "content": prompt}]}
+            if self._system:
+                kwargs["system"] = self._system
+            response = self.client.messages.create(**kwargs)
             text = response.content[0].text if response.content else "[]"
             text = text.strip()
             if text.startswith("```"):
@@ -179,14 +187,13 @@ class Splitter:
             f"Q: {sq.text}\nA: {sq.response}" for sq in sub_queries if sq.response
         )
         try:
-            response = self.client.messages.create(
-                model=self.model,
-                max_tokens=4000,
-                messages=[{
-                    "role": "user",
-                    "content": REASSEMBLY_PROMPT.format(query=query, pairs=pairs_text),
-                }],
-            )
+            kwargs = {
+                "model": self.model, "max_tokens": 4000,
+                "messages": [{"role": "user", "content": REASSEMBLY_PROMPT.format(query=query, pairs=pairs_text)}],
+            }
+            if self._system:
+                kwargs["system"] = self._system
+            response = self.client.messages.create(**kwargs)
             return response.content[0].text if response.content else ""
         except Exception:
             return self._simple_join(sub_queries)

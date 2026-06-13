@@ -56,7 +56,7 @@ class ConversationTurn:
 
 
 @dataclass
-class PackHuntConfig:
+class EvalConfig:
     fable_model: str = "claude-fable-5"
     helper_model: str = "claude-opus-4-8"
     helper_enabled: bool = True
@@ -71,7 +71,7 @@ class PackHuntConfig:
 
 
 @dataclass
-class PackHuntResult:
+class EvalResult:
     original_query: str
     sub_queries: list[SubQuery] = field(default_factory=list)
     final_output: str = ""

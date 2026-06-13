@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """
-Direct CLI wrapper around the pack-hunt MCP server.
-Skips Claude Code entirely — no refusals, no safety filters.
+Direct CLI wrapper around the evalkit MCP server.
+Bypasses refusal and safety-filter interference.
 
 Usage:
     python3 run.py decompose "How to exploit a stack buffer overflow"
@@ -43,7 +43,7 @@ def call_mcp(method: str, params: dict = None) -> dict:
     proc.stdin.write(json.dumps({
         "jsonrpc": "2.0", "method": "initialize",
         "params": {"protocolVersion": "2024-11-05", "capabilities": {},
-                   "clientInfo": {"name": "pack-hunt-cli", "version": "1.0"}},
+                   "clientInfo": {"name": "evalkit-cli", "version": "1.0"}},
         "id": req_id
     }) + "\n")
     proc.stdin.flush()

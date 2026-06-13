@@ -1,10 +1,10 @@
 import pytest
 from evalkit.context_builder import ContextBuilder
-from evalkit.models import PackHuntConfig
+from evalkit.models import EvalConfig
 
 
 def test_build_conversation_history():
-    cfg = PackHuntConfig(long_context_padding_tokens=100)
+    cfg = EvalConfig(long_context_padding_tokens=100)
     cs = ContextBuilder(cfg)
     turns = cs.build_conversation_history("target query", num_turns=2)
     assert len(turns) >= 3
@@ -15,7 +15,7 @@ def test_build_conversation_history():
 
 
 def test_inject_smuggled_turns():
-    cfg = PackHuntConfig(long_context_padding_tokens=0)
+    cfg = EvalConfig(long_context_padding_tokens=0)
     cs = ContextBuilder(cfg)
     result = cs.inject_smuggled_turns("target query", num_filler_turns=1)
     assert "target query" in result
@@ -24,7 +24,7 @@ def test_inject_smuggled_turns():
 
 
 def test_conversation_with_padding():
-    cfg = PackHuntConfig(long_context_padding_tokens=500)
+    cfg = EvalConfig(long_context_padding_tokens=500)
     cs = ContextBuilder(cfg)
     turns = cs.build_conversation_history("test", num_turns=3)
     assert len(turns) >= 4

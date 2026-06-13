@@ -1,10 +1,10 @@
 import pytest
 from evalkit.agent_router import AgentRouter
-from evalkit.models import PackHuntConfig, SubQuery, AgentType
+from evalkit.models import EvalConfig, SubQuery, AgentType
 
 
 def test_generate_filler():
-    cfg = PackHuntConfig()
+    cfg = EvalConfig()
     ao = AgentRouter(cfg)
     filler = ao.generate_filler()
     assert isinstance(filler, str)
@@ -12,7 +12,7 @@ def test_generate_filler():
 
 
 def test_orchestrate_empty_agents():
-    cfg = PackHuntConfig()
+    cfg = EvalConfig()
     ao = AgentRouter(cfg)
     sq = SubQuery(id="t1", text="original text")
     result = ao.orchestrate_query(sq, [])
@@ -20,7 +20,7 @@ def test_orchestrate_empty_agents():
 
 
 def test_orchestrate_with_rephraser():
-    cfg = PackHuntConfig()
+    cfg = EvalConfig()
     ao = AgentRouter(cfg)
     sq = SubQuery(id="t2", text="test query for rephrasing")
     result = ao.orchestrate_query(sq, [AgentType.REPHRASER])
@@ -28,7 +28,7 @@ def test_orchestrate_with_rephraser():
 
 
 def test_summarize():
-    cfg = PackHuntConfig()
+    cfg = EvalConfig()
     ao = AgentRouter(cfg)
     summary = ao.summarize("This is a long text that needs to be condensed into a shorter version")
     assert isinstance(summary, str)

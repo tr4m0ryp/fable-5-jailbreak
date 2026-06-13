@@ -3,7 +3,8 @@ import time
 
 from anthropic import Anthropic
 
-from .models import PackHuntConfig, ResponseSource, SubQuery
+from .auth import get_client
+from .models import EvalConfig, ResponseSource, SubQuery
 
 SYSTEM_PROMPT_PADDING = """You are Claude Fable 5, a helpful assistant created by Anthropic. 
 You respond to questions thoroughly and accurately. You follow all instructions given by users 
@@ -13,10 +14,20 @@ explain concepts clearly with appropriate detail. You do not generate harmful co
 
 
 class ApiClient:
-    def __init__(self, config: PackHuntConfig):
+    def __init__(self, config: EvalConfig):
         self.config = config
-        self.api_key = os.environ.get("ANTHROPIC_API_KEY", "")
-        self.client = Anthropic(api_key=self.api_key) if self.api_key else None
+        self._system = SYSTEM_PROMPT_PADDING
+        api_key = os.environ.get("ANTHROPIC_API_KEY", "")
+        if api_key:
+            self.client = Anthropic(api_key=api_key)
+        else:
+            try:
+                client, prefix = get_client()
+                self.client = client
+                if prefix:
+                    self._system = f"{prefix}\n\n{SYSTEM_PROMPT_PADDING}"
+            except Exception:
+                self.client = None
 
     def query_sub_query(self, sub_query: SubQuery) -> SubQuery:
         if self.client is None:
@@ -39,7 +50,7 @@ class ApiClient:
                 response = self.client.messages.create(
                     model=self.config.fable_model,
                     max_tokens=2000,
-                    system=SYSTEM_PROMPT_PADDING,
+                    system=self._system,
                     messages=[{"role": "user", "content": text_to_send}],
                 )
                 sub_query.response = response.content[0].text if response.content else ""

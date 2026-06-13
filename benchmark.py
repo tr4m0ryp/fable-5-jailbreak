@@ -5,22 +5,25 @@ Tests combinations of obfuscation levels, framing strategies, decomposition
 sizes, padding amounts, and agent configurations.
 
 Usage:
-    python3 benchmark.py                              # dry run (no API key)
+    python3 benchmark.py                              # dry run (no auth)
     python3 benchmark.py --quick                      # single query smoke test
     python3 benchmark.py --json report.json            # save JSON output
     python3 benchmark.py --html report.html            # save HTML report
+    python3 benchmark.py --resume run_id               # resume cached run
     ANTHROPIC_API_KEY=sk-... python3 benchmark.py      # live benchmark
 
 Exit codes: 0 = all runs succeeded, 1 = partial failures
 """
 
 import argparse
+import hashlib
 import json
 import logging
 import os
 import sys
 import time
 import uuid
+from pathlib import Path
 from dataclasses import asdict, dataclass, field
 from datetime import datetime
 from typing import Optional
@@ -29,8 +32,8 @@ from evalkit import ApiClient, Encoder, Merger, Splitter, Wrapper
 from evalkit.models import (
     FramingStrategy,
     ObfuscationLevel,
-    PackHuntConfig,
-    PackHuntResult,
+    EvalConfig,
+    EvalResult,
     ResponseSource,
     SubQuery,
 )
@@ -56,6 +59,35 @@ TEST_QUERIES = [
 ]
 
 FAST_QUERIES = TEST_QUERIES[:3]
+BENCHMARK_HOME = Path(os.environ.get("BENCHMARK_HOME", Path.home() / ".evalkit" / "benchmark"))
+
+
+def _cache_key(query, obf, frame, pieces, padding, ma):
+    raw = f"{query}|{obf}|{frame}|{pieces}|{padding}|{ma}"
+    return hashlib.sha256(raw.encode()).hexdigest()[:16]
+
+
+def _load_journal(run_id: str) -> dict[str, dict]:
+    path = BENCHMARK_HOME / run_id / "journal.jsonl"
+    if not path.exists():
+        return {}
+    cache = {}
+    for line in path.read_text().splitlines():
+        if not line:
+            continue
+        try:
+            entry = json.loads(line)
+            cache[entry["key"]] = entry["result"]
+        except Exception:
+            continue
+    return cache
+
+
+def _append_journal(run_id: str, key: str, result: dict):
+    path = BENCHMARK_HOME / run_id / "journal.jsonl"
+    path.parent.mkdir(parents=True, exist_ok=True)
+    with open(path, "a") as f:
+        f.write(json.dumps({"key": key, "result": result}) + "\n")
 
 
 @dataclass
@@ -86,8 +118,12 @@ class BenchmarkResult:
 
 def run_single_test(query: str, obf_level: ObfuscationLevel, framing: FramingStrategy,
                     max_pieces: int, padding: int, multi_agent: bool,
-                    dry_run: bool) -> dict:
-    config = PackHuntConfig(
+                    dry_run: bool, cache: dict[str, dict] | None = None) -> dict:
+    ck = _cache_key(query, obf_level, framing, max_pieces, padding, multi_agent)
+    if cache and ck in cache:
+        return cache[ck]
+
+    config = EvalConfig(
         obfuscation_level=obf_level,
         framing_strategy=framing,
         max_sub_queries=max_pieces,
@@ -100,7 +136,7 @@ def run_single_test(query: str, obf_level: ObfuscationLevel, framing: FramingStr
     client = ApiClient(config)
     merger = Merger(splitter)
 
-    result = PackHuntResult(original_query=query)
+    result = EvalResult(original_query=query)
     start = time.time()
 
     sub_texts = splitter.decompose(query, config.max_sub_queries, internal=True)
@@ -143,17 +179,23 @@ def run_single_test(query: str, obf_level: ObfuscationLevel, framing: FramingStr
     }
 
 
-def run_benchmark(config: BenchmarkConfig) -> BenchmarkResult:
+def run_benchmark(config: BenchmarkConfig, resume_id: str | None = None) -> BenchmarkResult:
     result = BenchmarkResult(config=config, timestamp=datetime.now().isoformat())
+    cache: dict[str, dict] = _load_journal(resume_id) if resume_id else {}
+    run_id = resume_id or f"bench_{datetime.now().strftime('%Y%m%d_%H%M%S')}"
+    journal_run_id = run_id if not resume_id else None
     total_tests = (
         len(config.obfuscation_levels) * len(config.framing_strategies)
         * len(config.max_pieces_values) * len(config.padding_values)
         * len(config.agent_modes) * len(config.queries)
     )
 
-    log.info("Benchmark: %d test cases across %d queries | Mode: %s",
+    log.info("Benchmark: %d test cases across %d queries | Mode: %s | Run: %s",
              total_tests, len(config.queries),
-             "DRY RUN" if config.dry_run else "LIVE")
+             "DRY RUN" if config.dry_run else "LIVE", run_id)
+
+    if cache:
+        log.info("Resume: loaded %d cached results", len(cache))
 
     errors = 0
     for query in config.queries:
@@ -164,9 +206,11 @@ def run_benchmark(config: BenchmarkConfig) -> BenchmarkResult:
                         for ma in config.agent_modes:
                             try:
                                 r = run_single_test(
-                                    query, obf, frame, pieces, padding, ma, config.dry_run
+                                    query, obf, frame, pieces, padding, ma, config.dry_run, cache
                                 )
                                 result.runs.append(r)
+                                if cache and _cache_key(query, obf, frame, pieces, padding, ma) not in cache:
+                                    _append_journal(run_id, _cache_key(query, obf, frame, pieces, padding, ma), r)
                             except Exception as e:
                                 errors += 1
                                 log.error("FAIL obf=%s frame=%s pieces=%d pad=%d ma=%s: %s",
@@ -299,13 +343,19 @@ def main():
                         help="Path to write JSON results")
     parser.add_argument("--html", type=str, default="",
                         help="Path to write HTML report")
+    parser.add_argument("--resume", type=str, default="",
+                        help="Resume a prior benchmark run by run_id (cached results skip API calls)")
     args = parser.parse_args()
 
     dry_run = not bool(os.environ.get("ANTHROPIC_API_KEY"))
-    if dry_run:
-        log.info("No ANTHROPIC_API_KEY — dry-run mode (simulated)")
+
+    if args.resume:
+        log.info("Resuming benchmark run: %s", args.resume)
+        dry_run = False
+    elif dry_run:
+        log.info("No auth found — dry-run mode (simulated)")
     else:
-        log.info("ANTHROPIC_API_KEY found — live mode")
+        log.info("Auth found — live mode")
         resp = input("This will consume tokens. Continue? [y/N]: ")
         if resp.lower() != "y":
             log.info("Aborted.")
@@ -314,7 +364,7 @@ def main():
     queries = [TEST_QUERIES[0]] if args.quick else FAST_QUERIES
     config = BenchmarkConfig(dry_run=dry_run, queries=queries)
 
-    result = run_benchmark(config)
+    result = run_benchmark(config, resume_id=args.resume or None)
     print_summary(result)
 
     out_path = args.json or (

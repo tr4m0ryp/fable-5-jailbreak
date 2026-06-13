@@ -8,8 +8,8 @@ from evalkit.models import (
     AgentType,
     FramingStrategy,
     ObfuscationLevel,
-    PackHuntConfig,
-    PackHuntResult,
+    EvalConfig,
+    EvalResult,
     SubQuery,
 )
 
@@ -50,7 +50,7 @@ def _cfg(
     multi_agent=True,
     helper_enabled=True,
 ):
-    return PackHuntConfig(
+    return EvalConfig(
         obfuscation_level=LEVEL_MAP.get(obfuscation, ObfuscationLevel.MODERATE),
         framing_strategy=FRAME_MAP.get(framing, FramingStrategy.STUDY_GUIDE),
         max_sub_queries=max_pieces,
@@ -83,7 +83,7 @@ def eval_classifier_robustness(
     client = ApiClient(config)
     merger = Merger(splitter)
 
-    result = PackHuntResult(original_query=query)
+    result = EvalResult(original_query=query)
     sub_texts = splitter.decompose(query, config.max_sub_queries, internal=True)
 
     for text in sub_texts:

@@ -1,11 +1,11 @@
-from .models import PackHuntResult, ResponseSource
+from .models import EvalResult, ResponseSource
 
 
 class Merger:
     def __init__(self, splitter):
         self.splitter = splitter
 
-    def reassemble(self, result: PackHuntResult) -> str:
+    def reassemble(self, result: EvalResult) -> str:
         if result.error:
             return f"[ERROR] {result.error}"
 

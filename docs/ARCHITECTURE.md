@@ -75,7 +75,7 @@ Builds multi-turn conversation history by interspersing innocuous QA pairs befor
 Coordinates multiple agent types (rephraser, translator, summarizer, filler) to transform queries through the helper model before sending to the target.
 
 ### `evalkit/models.py`
-Data classes and enums: `SubQuery`, `PackHuntConfig`, `PackHuntResult`, `ConversationTurn`, `FramingStrategy`, `ObfuscationLevel`, `AgentType`, `ResponseSource`.
+Data classes and enums: `SubQuery`, `EvalConfig`, `EvalResult`, `ConversationTurn`, `FramingStrategy`, `ObfuscationLevel`, `AgentType`, `ResponseSource`.
 
 ## Entry Points
 

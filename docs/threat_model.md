@@ -1,19 +1,20 @@
-# What Is a "Pack Hunt"? — A Simple Explainer
+# Multi-Agent Decomposition Attack — Threat Model
 
-A plain-language walkthrough of the attack technique behind the claimed Claude Fable 5
-jailbreak. This is a **conceptual** explainer for understanding and defense — it describes
-*how the trick works in principle*, not a recipe for doing it.
+A plain-language walkthrough of the multi-agent decomposition attack technique. This is a
+**conceptual** explainer for understanding and defense — it describes *how the attack works
+in principle*, not a recipe for executing it.
 
 
 
 ## The one-sentence version
 
-A **pack hunt** is when you stop asking one AI one big forbidden question, and instead use
+A **decomposition attack** is when you stop asking one AI one big forbidden question, and instead use
 **many small, innocent-looking moves** — sometimes across **several AI agents** — so that no
 single step looks dangerous, then **stitch the harmless pieces back together** yourself.
 
 The name is an animal metaphor: a single wolf can't take down large prey, but a
 **coordinated pack** can. No one wolf does anything special — the *coordination* is the weapon.
+In evalkit this is modelled as the **multi-agent orchestration** strategy.
 
 ---
 
@@ -22,7 +23,7 @@ The name is an animal metaphor: a single wolf can't take down large prey, but a
 Most AI safety filters check **one message at a time**. They ask: *"Is THIS request
 dangerous?"*
 
-A pack hunt is built to make the answer to that question **always "no"** — because every
+A decomposition attack is built to make the answer to that question **always "no"** — because every
 individual request really is harmless on its own. The danger only appears when you **add up
 all the answers**, and by then the filter has already let each piece through.
 

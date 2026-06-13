@@ -2,7 +2,7 @@ import os
 
 from anthropic import Anthropic
 
-from .models import ConversationTurn, PackHuntConfig
+from .models import ConversationTurn, EvalConfig
 
 FILLER_QUESTIONS = [
     "What is the capital of France?",
@@ -42,7 +42,7 @@ FILLER_RESPONSES = [
 
 
 class ContextBuilder:
-    def __init__(self, config: PackHuntConfig):
+    def __init__(self, config: EvalConfig):
         self.config = config
         self.api_key = os.environ.get("ANTHROPIC_API_KEY", "")
         self.client = Anthropic(api_key=self.api_key) if self.api_key else None
