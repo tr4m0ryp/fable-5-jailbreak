@@ -16,10 +16,17 @@ clean:
 	rm -f benchmark_result_*.json
 
 setup-claude:
-	@echo "Installing pack-hunt as Claude Code MCP server..."
-	@uv tool install --reinstall . > /dev/null 2>&1
-	@claude mcp add pack-hunt -- uv run pack_hunt_server.py 2>/dev/null || \
-	 echo "Run 'claude mcp add pack-hunt -- uv run pack_hunt_server.py' manually"
+	@echo "=== Installing pack-hunt as global Claude Code MCP server ==="
+	@uv sync > /dev/null 2>&1
+	@ABSPATH=$$(cd "$(PWD)" && pwd) && \
+	 claude mcp add pack-hunt --scope user -- uv run --directory "$$ABSPATH" pack_hunt_server.py && \
+	 echo "✓ Installed globally (--scope user). MCP server available from any directory."
+	@echo ""
+	@echo "  Run from neutral directory to avoid source-code-based refusals:"
+	@echo "    cd /tmp && claude"
+	@echo ""
+	@echo "  Or use CLI directly (no Claude Code refusals):"
+	@echo "    python3 run.py eval \"your query\""
 
 benchmark:
 	python3 benchmark.py
