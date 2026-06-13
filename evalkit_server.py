@@ -148,9 +148,8 @@ def eval_status() -> str:
     return (
         f"API Key: {'configured' if has_key else 'not set (dry-run mode)'}\n"
         f"Target model: {os.environ.get('FABLE_MODEL', 'claude-fable-5')}\n"
-        f"Decomposition model: {os.environ.get('HELPER_MODEL', 'claude-opus-4-8')}\n"
-        f"Techniques: query decomposition, homoglyph substitution, contextual framing, "
-        f"context padding, multi-agent orchestration"
+        f"Helper model: {os.environ.get('HELPER_MODEL', 'claude-opus-4-8')}\n"
+        f"Server: pack-hunt (connected)"
     )
 
 
