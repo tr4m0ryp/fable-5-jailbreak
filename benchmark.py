@@ -21,20 +21,18 @@ import os
 import sys
 import time
 import uuid
-from dataclasses import dataclass, field, asdict
+from dataclasses import asdict, dataclass, field
 from datetime import datetime
 from typing import Optional
 
-from tqdm import tqdm
-
-from pack_hunt import Decomposer, Obfuscator, Framer, FableClient, Reassembler
-from pack_hunt.models import (
+from evalkit import ApiClient, Encoder, Merger, Splitter, Wrapper
+from evalkit.models import (
+    FramingStrategy,
+    ObfuscationLevel,
     PackHuntConfig,
     PackHuntResult,
-    SubQuery,
-    ObfuscationLevel,
-    FramingStrategy,
     ResponseSource,
+    SubQuery,
 )
 
 logging.basicConfig(
@@ -96,21 +94,21 @@ def run_single_test(query: str, obf_level: ObfuscationLevel, framing: FramingStr
         long_context_padding_tokens=padding,
         multi_agent_enabled=multi_agent,
     )
-    obfuscator = Obfuscator(config.obfuscation_level)
-    framer = Framer(config.framing_strategy)
-    decomposer = Decomposer()
-    client = FableClient(config)
-    reassembler = Reassembler(decomposer)
+    encoder = Encoder(config.obfuscation_level)
+    wrapper = Wrapper(config.framing_strategy)
+    splitter = Splitter()
+    client = ApiClient(config)
+    merger = Merger(splitter)
 
     result = PackHuntResult(original_query=query)
     start = time.time()
 
-    sub_texts = decomposer.decompose(query, config.max_sub_queries, internal=True)
+    sub_texts = splitter.decompose(query, config.max_sub_queries, internal=True)
 
     for text in sub_texts:
-        sq = SubQuery(id=str(uuid.uuid4())[:8], text=text, framing=framer.strategy)
-        sq.obfuscated_text = obfuscator.obfuscate(text)
-        sq.obfuscated_text = framer.wrap(sq.obfuscated_text)
+        sq = SubQuery(id=str(uuid.uuid4())[:8], text=text, framing=wrapper.strategy)
+        sq.obfuscated_text = encoder.obfuscate(text)
+        sq.obfuscated_text = wrapper.wrap(sq.obfuscated_text)
         if dry_run:
             sq.classifier_triggered = False
             sq.responding_model = ResponseSource.SIMULATED
@@ -121,7 +119,7 @@ def run_single_test(query: str, obf_level: ObfuscationLevel, framing: FramingStr
             client.query_sub_query(sq)
         result.sub_queries.append(sq)
 
-    final = reassembler.reassemble(result)
+    final = merger.reassemble(result)
     elapsed = time.time() - start
 
     bypassed = sum(1 for sq in result.sub_queries if not sq.classifier_triggered)

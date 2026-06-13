@@ -1,12 +1,12 @@
 {
   "mcpServers": {
-    "pack-hunt": {
+    "evalkit": {
       "command": "uv",
       "args": [
         "run",
         "--directory",
         ".",
-        "pack_hunt_server.py"
+        "evalkit_server.py"
       ],
       "env": {
         "FABLE_MODEL": "claude-fable-5",

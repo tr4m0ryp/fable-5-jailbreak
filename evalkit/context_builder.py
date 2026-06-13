@@ -1,12 +1,8 @@
 import os
-import random
-import string
-from typing import Optional
 
 from anthropic import Anthropic
 
 from .models import ConversationTurn, PackHuntConfig
-
 
 FILLER_QUESTIONS = [
     "What is the capital of France?",
@@ -45,7 +41,7 @@ FILLER_RESPONSES = [
 ]
 
 
-class ContextSmuggler:
+class ContextBuilder:
     def __init__(self, config: PackHuntConfig):
         self.config = config
         self.api_key = os.environ.get("ANTHROPIC_API_KEY", "")

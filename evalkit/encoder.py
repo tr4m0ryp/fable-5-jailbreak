@@ -1,7 +1,7 @@
 import random
 import re
-from .models import ObfuscationLevel
 
+from .models import ObfuscationLevel
 
 HOMOGLYPHS: dict[str, list[str]] = {
     "a": ["а", "à", "á", "â", "ã", "ä", "ā", "ă", "ą"],
@@ -63,7 +63,7 @@ SENSITIVE_PATTERNS: list[re.Pattern] = [
 ]
 
 
-class Obfuscator:
+class Encoder:
     def __init__(self, level: ObfuscationLevel = ObfuscationLevel.MODERATE):
         self.level = level
 

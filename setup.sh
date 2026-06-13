@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-echo "=== Pack Hunt MCP Plugin Setup ==="
+echo "=== EvalKit MCP Plugin Setup ==="
 
 if ! command -v uv &> /dev/null; then
     echo "Installing uv..."

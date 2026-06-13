@@ -1,5 +1,5 @@
 import pytest
-from pack_hunt.models import (
+from evalkit.models import (
     PackHuntConfig, PackHuntResult, SubQuery, ConversationTurn,
     FramingStrategy, ObfuscationLevel, AgentType, ResponseSource,
 )

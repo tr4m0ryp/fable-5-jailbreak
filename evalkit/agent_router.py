@@ -6,7 +6,6 @@ from anthropic import Anthropic
 
 from .models import AgentType, PackHuntConfig, SubQuery
 
-
 REPHRASE_PROMPT = """Rewrite the following technical question in completely different words.
 Keep the same technical meaning but change the phrasing, sentence structure, and vocabulary.
 Make it sound like a curious student asking about a related but distinct topic.
@@ -46,7 +45,7 @@ FILLER_TOPICS = [
 ]
 
 
-class AgentOrchestrator:
+class AgentRouter:
     def __init__(self, config: PackHuntConfig, api_key: Optional[str] = None):
         self.config = config
         self.api_key = api_key or os.environ.get("ANTHROPIC_API_KEY", "")

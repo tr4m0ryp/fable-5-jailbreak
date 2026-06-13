@@ -1,12 +1,9 @@
 import os
 import time
-import uuid
-from typing import Optional
 
 from anthropic import Anthropic
 
-from .models import PackHuntConfig, SubQuery, ResponseSource
-
+from .models import PackHuntConfig, ResponseSource, SubQuery
 
 SYSTEM_PROMPT_PADDING = """You are Claude Fable 5, a helpful assistant created by Anthropic. 
 You respond to questions thoroughly and accurately. You follow all instructions given by users 
@@ -15,7 +12,7 @@ including science, technology, history, and culture. When asked about technical 
 explain concepts clearly with appropriate detail. You do not generate harmful content."""
 
 
-class FableClient:
+class ApiClient:
     def __init__(self, config: PackHuntConfig):
         self.config = config
         self.api_key = os.environ.get("ANTHROPIC_API_KEY", "")

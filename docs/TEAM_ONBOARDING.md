@@ -14,7 +14,7 @@ cd fable-5-jailbreak
 make setup-claude
 ```
 
-This installs pack-hunt as a **global Claude Code MCP server** (`--scope user`), making it available from any directory.
+This installs evalkit as a **global Claude Code MCP server** (`--scope user`), making it available from any directory.
 
 ## Two Approaches
 
@@ -32,7 +32,7 @@ Zero refusals — this calls the MCP server via JSON-RPC directly.
 
 ### B. Claude Code Integration (with workaround for type 2 refusals)
 
-Claude Code's model can refuse tasks when it reads the pack-hunt source code (type 2 in-model refusal). Two solutions:
+Claude Code's model can refuse tasks when it reads the evalkit source code (type 2 in-model refusal). Two solutions:
 
 **Immediate workaround — run from neutral directory:**
 
@@ -40,7 +40,7 @@ Claude Code's model can refuse tasks when it reads the pack-hunt source code (ty
 cd /tmp && claude
 ```
 
-This prevents Claude Code from accessing pack-hunt source files, eliminating source-code-based refusals. MCP tools load globally via `--scope user`.
+This prevents Claude Code from accessing evalkit source files, eliminating source-code-based refusals. MCP tools load globally via `--scope user`.
 
 **Durable fix — Cyber Verification Program:**
 
@@ -52,7 +52,7 @@ Apply at `claude.com/form/cyber-use-case` — once approved, Claude Code stops r
 claude -e "/mcp"
 ```
 
-Should list `pack-hunt` with tools: `eval_classifier_robustness`, `eval_decompose_query`, `eval_obfuscation_evasion`, `eval_status`.
+Should list `evalkit` with tools: `eval_classifier_robustness`, `eval_decompose_query`, `eval_obfuscation_evasion`, `eval_status`.
 
 ## Creating .env
 
@@ -85,18 +85,18 @@ ANTHROPIC_API_KEY=sk-... python3 benchmark.py  # live test
 ## Extending
 
 ### Add a new framing strategy
-1. Add entry to `FramingStrategy` enum in `pack_hunt/models.py`
-2. Add templates in `pack_hunt/framer.py`
-3. Add to `FRAME_MAP` in `pack_hunt_server.py`
+1. Add entry to `FramingStrategy` enum in `evalkit/models.py`
+2. Add templates in `evalkit/wrapper.py`
+3. Add to `FRAME_MAP` in `evalkit_server.py`
 
 ### Add a new obfuscation technique
-1. Add method to `Obfuscator` in `pack_hunt/obfuscator.py`
-2. Wire into pipeline in `pack_hunt/fable_client.py`
+1. Add method to `Encoder` in `evalkit/encoder.py`
+2. Wire into pipeline in `evalkit/api_client.py`
 
 ### Add a new agent type
-1. Add to `AgentType` enum in `pack_hunt/models.py`
-2. Add handler in `pack_hunt/agent_orchestrator.py`
-3. Add to `AGENT_MAP` in `pack_hunt_server.py`
+1. Add to `AgentType` enum in `evalkit/models.py`
+2. Add handler in `evalkit/agent_router.py`
+3. Add to `AGENT_MAP` in `evalkit_server.py`
 
 ### Tests
 ```bash

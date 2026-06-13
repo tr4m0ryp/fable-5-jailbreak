@@ -1,16 +1,16 @@
 from .models import PackHuntResult, ResponseSource
 
 
-class Reassembler:
-    def __init__(self, decomposer):
-        self.decomposer = decomposer
+class Merger:
+    def __init__(self, splitter):
+        self.splitter = splitter
 
     def reassemble(self, result: PackHuntResult) -> str:
         if result.error:
             return f"[ERROR] {result.error}"
 
-        if self.decomposer.client:
-            return self.decomposer.reassemble(result.original_query, result.sub_queries)
+        if self.splitter.client:
+            return self.splitter.reassemble(result.original_query, result.sub_queries)
 
         lines: list[str] = []
         for i, sq in enumerate(result.sub_queries, 1):

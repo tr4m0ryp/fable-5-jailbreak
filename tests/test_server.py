@@ -1,6 +1,6 @@
 import pytest
-from pack_hunt_server import LEVEL_MAP, FRAME_MAP, AGENT_MAP, _cfg
-from pack_hunt.models import ObfuscationLevel, FramingStrategy
+from evalkit_server import LEVEL_MAP, FRAME_MAP, AGENT_MAP, _cfg
+from evalkit.models import ObfuscationLevel, FramingStrategy
 
 
 class TestServerMaps:

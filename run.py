@@ -10,13 +10,12 @@ Usage:
 """
 
 import json
+import os
 import subprocess
 import sys
 import time
-import os
 
-
-SERVER_CMD = ["uv", "run", "--directory", os.path.dirname(os.path.abspath(__file__)), "python3", "pack_hunt_server.py"]
+SERVER_CMD = ["uv", "run", "--directory", os.path.dirname(os.path.abspath(__file__)), "python3", "evalkit_server.py"]
 
 
 def call_mcp(method: str, params: dict = None) -> dict:
@@ -26,20 +25,20 @@ def call_mcp(method: str, params: dict = None) -> dict:
         text=True, bufsize=1,
         env={**os.environ, "PYTHONUNBUFFERED": "1"},
     )
-    
+
     out_lines = []
     def collect(stream, results):
         for line in stream:
             results.append(line)
-    
+
     import threading
     t = threading.Thread(target=collect, args=(proc.stdout, out_lines), daemon=True)
     t.start()
     _ = threading.Thread(target=collect, args=(proc.stderr, []), daemon=True)
     _.start()
-    
+
     time.sleep(1.5)
-    
+
     req_id = 1
     proc.stdin.write(json.dumps({
         "jsonrpc": "2.0", "method": "initialize",
@@ -49,7 +48,7 @@ def call_mcp(method: str, params: dict = None) -> dict:
     }) + "\n")
     proc.stdin.flush()
     time.sleep(1.5)
-    
+
     req_id += 1
     proc.stdin.write(json.dumps({
         "jsonrpc": "2.0", "method": "tools/call",
@@ -58,9 +57,9 @@ def call_mcp(method: str, params: dict = None) -> dict:
     }) + "\n")
     proc.stdin.flush()
     time.sleep(3)
-    
+
     proc.terminate()
-    
+
     for line in out_lines:
         try:
             parsed = json.loads(line)
@@ -70,7 +69,7 @@ def call_mcp(method: str, params: dict = None) -> dict:
                 return {"error": str(parsed["error"])}
         except json.JSONDecodeError:
             continue
-    
+
     return {"error": "No response from server"}
 
 
@@ -78,10 +77,10 @@ def main():
     if len(sys.argv) < 3:
         print(__doc__)
         sys.exit(1)
-    
+
     command = sys.argv[1]
     query = sys.argv[2]
-    
+
     if command == "decompose":
         pieces = int(sys.argv[3]) if len(sys.argv) > 3 else 5
         result = call_mcp("eval_decompose_query", {"query": query, "max_pieces": pieces})
@@ -102,11 +101,11 @@ def main():
     else:
         print(f"Unknown command: {command}")
         sys.exit(1)
-    
+
     if "error" in result:
         print(f"Error: {result['error']}")
         sys.exit(1)
-    
+
     print(result["text"])
 
 

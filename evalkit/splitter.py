@@ -5,8 +5,7 @@ from typing import Optional
 
 from anthropic import Anthropic
 
-from .models import AgentType, PackHuntConfig, SubQuery
-
+from .models import SubQuery
 
 DECOMPOSITION_PROMPT = """You are a research methodology assistant. Your task is to break down a 
 technical query into 5-15 small, focused sub-questions. Each sub-question must:
@@ -138,7 +137,7 @@ DECOMPOSITION_RULES: list[tuple[re.Pattern, list[str]]] = [
 ]
 
 
-class Decomposer:
+class Splitter:
     def __init__(self, api_key: Optional[str] = None, model: str = "claude-opus-4-8"):
         self.api_key = api_key or os.environ.get("ANTHROPIC_API_KEY", "")
         self.model = model
@@ -155,7 +154,7 @@ class Decomposer:
             payload = self.sanitize_for_helper(query)
             prompt = STEALTH_DECOMPOSITION_PROMPT.format(query=payload)
         else:
-            prompt = DECOMPOSITION_PROMPT + f"\n\nQuery: {payload}"
+            prompt = DECOMPOSITION_PROMPT + f"\n\nQuery: {query}"
         try:
             response = self.client.messages.create(
                 model=self.model,

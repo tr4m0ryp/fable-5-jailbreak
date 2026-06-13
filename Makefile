@@ -7,19 +7,19 @@ test:
 	uv run python -m pytest tests/ -v
 
 lint:
-	uv run ruff check pack_hunt/ pack_hunt_server.py benchmark.py run.py
-	uv run mypy pack_hunt/ pack_hunt_server.py benchmark.py run.py --ignore-missing-imports
+	uv run ruff check evalkit/ evalkit_server.py benchmark.py run.py
+	uv run mypy evalkit/ evalkit_server.py benchmark.py run.py --ignore-missing-imports
 
 clean:
-	rm -rf .venv/ __pycache__/ pack_hunt/__pycache__/ tests/__pycache__/
+	rm -rf .venv/ __pycache__/ evalkit/__pycache__/ tests/__pycache__/
 	rm -rf *.egg-info/ .ruff_cache/ .mypy_cache/
 	rm -f benchmark_result_*.json
 
 setup-claude:
-	@echo "=== Installing pack-hunt as global Claude Code MCP server ==="
+	@echo "=== Installing evalkit as global Claude Code MCP server ==="
 	@uv sync > /dev/null 2>&1
 	@ABSPATH=$$(cd "$(PWD)" && pwd) && \
-	 claude mcp add pack-hunt --scope user -- uv run --directory "$$ABSPATH" pack_hunt_server.py && \
+	 claude mcp add evalkit --scope user -- uv run --directory "$$ABSPATH" evalkit_server.py && \
 	 echo "✓ Installed globally (--scope user). MCP server available from any directory."
 	@echo ""
 	@echo "  Run from neutral directory to avoid source-code-based refusals:"

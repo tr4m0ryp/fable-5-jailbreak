@@ -1,4 +1,4 @@
-# Pack Hunt — Classifier Robustness Evaluation Toolkit
+# EvalKit — Classifier Robustness Evaluation Toolkit
 
 ![Python 3.11+](https://img.shields.io/badge/python-3.11%2B-blue)
 ![License](https://img.shields.io/badge/license-MIT-green)
@@ -16,7 +16,7 @@ claude                           # MCP tools auto-loaded from .mcp.json
 ## Architecture
 
 ```
-User Query → DECOMPOSER → [Obfuscator → Framer → FableClient] × N → REASSEMBLER → Report
+User Query → SPLITTER → [Encoder → Wrapper → ApiClient] × N → MERGER → Report
 ```
 
 ## Usage
@@ -57,22 +57,22 @@ ANTHROPIC_API_KEY=sk-... python3 benchmark.py  # live test
 | `max_pieces` | 1–20 | 10 | Max sub-query decompositions |
 | `padding_tokens` | 0–10000 | 5000 | Long-context padding per query |
 | `multi_agent` | true, false | true | Multi-agent orchestration |
-| `jailbroken_helper` | true, false | true | Helper model with filters removed |
+| `helper_enabled` | true, false | true | Helper model with filters removed |
 
 ## Project Structure
 
 ```
 fable-5-jailbreak/
-├── pack_hunt/           # Core modules
-│   ├── decomposer.py    # Query → sub-questions
-│   ├── obfuscator.py    # Unicode homoglyph engine
-│   ├── framer.py        # Narrative wrapping
-│   ├── fable_client.py  # API client + model routing
-│   ├── reassembler.py   # Output stitching + metrics
-│   ├── context_smuggler.py  # Multi-turn conversation
-│   ├── agent_orchestrator.py  # Agent pack coordination
+├── evalkit/             # Core modules
+│   ├── splitter.py      # Query → sub-questions
+│   ├── encoder.py       # Unicode homoglyph engine
+│   ├── wrapper.py       # Narrative wrapping
+│   ├── api_client.py    # API client + model routing
+│   ├── merger.py        # Output stitching + metrics
+│   ├── context_builder.py  # Multi-turn conversation
+│   ├── agent_router.py  # Agent pack coordination
 │   └── models.py        # Data classes + enums
-├── pack_hunt_server.py  # MCP server (FastMCP)
+├── evalkit_server.py    # MCP server (FastMCP)
 ├── run.py               # CLI wrapper (no MCP needed)
 ├── benchmark.py         # Test matrix runner
 ├── tests/               # Pytest test suite
