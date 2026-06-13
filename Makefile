@@ -4,7 +4,7 @@ install:
 	uv sync
 
 test:
-	uv run pytest tests/ -v
+	uv run python -m pytest tests/ -v
 
 lint:
 	uv run ruff check pack_hunt/ pack_hunt_server.py benchmark.py run.py
